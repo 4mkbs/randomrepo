@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 export default function Settings() {
     const [username, setUsername] = useState('');
     const [randomRepo, setRandomRepo] = useState('');
@@ -41,6 +40,12 @@ export default function Settings() {
             console.error('Error fetching repositories:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openRepoInBrowser = () => {
+        if (repoData?.html_url) {
+            Linking.openURL(repoData.html_url);
         }
     };
 
@@ -96,46 +101,48 @@ export default function Settings() {
                 ) : null}
 
                 {repoData ? (
-                    <View style={styles.resultCard}>
-                        <View style={styles.resultHeader}>
-                            <View style={styles.resultIconBox}>
-                                <Ionicons name="folder" size={24} color="#6366f1" />
+                    <TouchableOpacity onPress={openRepoInBrowser}>
+                        <View style={styles.resultCard}>
+                            <View style={styles.resultHeader}>
+                                <View style={styles.resultIconBox}>
+                                    <Ionicons name="folder" size={24} color="#6366f1" />
+                                </View>
+                                <View style={styles.resultTitleSection}>
+                                    <Text style={styles.resultTitle}>{repoData.name}</Text>
+                                    <Text style={styles.resultOwner}>{repoData.owner?.login}</Text>
+                                </View>
                             </View>
-                            <View style={styles.resultTitleSection}>
-                                <Text style={styles.resultTitle}>{repoData.name}</Text>
-                                <Text style={styles.resultOwner}>{repoData.owner?.login}</Text>
+
+                            {repoData.description ? (
+                                <Text style={styles.resultDescription}>{repoData.description}</Text>
+                            ) : null}
+
+                            <View style={styles.statsContainer}>
+                                <StatItem
+                                    icon="star"
+                                    label="Stars"
+                                    value={repoData.stargazers_count?.toLocaleString() || '0'}
+                                />
+                                <StatItem
+                                    icon="shuffle"
+                                    label="Forks"
+                                    value={repoData.forks_count?.toLocaleString() || '0'}
+                                />
+                                <StatItem
+                                    icon="eye"
+                                    label="Watches"
+                                    value={repoData.watchers_count?.toLocaleString() || '0'}
+                                />
                             </View>
+
+                            {repoData.language ? (
+                                <View style={styles.languageTag}>
+                                    <View style={styles.languageDot} />
+                                    <Text style={styles.languageText}>{repoData.language}</Text>
+                                </View>
+                            ) : null}
                         </View>
-
-                        {repoData.description ? (
-                            <Text style={styles.resultDescription}>{repoData.description}</Text>
-                        ) : null}
-
-                        <View style={styles.statsContainer}>
-                            <StatItem
-                                icon="star"
-                                label="Stars"
-                                value={repoData.stargazers_count?.toLocaleString() || '0'}
-                            />
-                            <StatItem
-                                icon="shuffle"
-                                label="Forks"
-                                value={repoData.forks_count?.toLocaleString() || '0'}
-                            />
-                            <StatItem
-                                icon="eye"
-                                label="Watches"
-                                value={repoData.watchers_count?.toLocaleString() || '0'}
-                            />
-                        </View>
-
-                        {repoData.language ? (
-                            <View style={styles.languageTag}>
-                                <View style={styles.languageDot} />
-                                <Text style={styles.languageText}>{repoData.language}</Text>
-                            </View>
-                        ) : null}
-                    </View>
+                    </TouchableOpacity>
                 ) : null}
             </View>
         </ScrollView>
